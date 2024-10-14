@@ -11,7 +11,7 @@ function fetchArticleById(articleId){
 
 function fetchAllArticles(){
     return db.query(
-        `SELECT articles.*, COUNT(comments) AS comment_count
+        `SELECT articles.*, COUNT(comments)::INT AS comment_count
         FROM articles LEFT JOIN comments 
         ON comments.article_id = articles.article_id
         GROUP BY articles.article_id
