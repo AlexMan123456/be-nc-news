@@ -1,7 +1,7 @@
-const { retrieveAllEndpoints } = require("../models/endpoints-model")
+const { fetchAllEndpoints } = require("../models/endpoints-model")
 
 function getAllEndpoints(request, response, next){
-    retrieveAllEndpoints().then((endpoints) => {
+    fetchAllEndpoints().then((endpoints) => {
         response.status(200).send({endpoints})
     }).catch((err) => {
         next(err)
