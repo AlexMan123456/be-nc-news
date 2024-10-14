@@ -58,7 +58,6 @@ describe("/api/articles/:article_id", () => {
                 expect(typeof response.body.article.created_at).toBe("string")
                 expect(typeof response.body.article.votes).toBe("number")
                 expect(typeof response.body.article.article_img_url).toBe("string")
-
             })
         })
         test("400: Responds with a bad request message if given an invalid ID", () => {
@@ -77,13 +76,34 @@ describe("/api/articles/:article_id", () => {
                 expect(response.body.message).toBe("Article not found")
             })
         })
+    })
+})
 
-        
+describe("/api/articles", () => {
+    describe("GET", () => {
+        test("200: Responds with an array containing all articles with correct properties of correct types", () => {
+            return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.articles.length).toBe(13)
+                response.body.articles.forEach((article) => {
+                    expect(typeof article.article_id).toBe("number")
+                    expect(typeof article.author).toBe("string")
+                    expect(typeof article.title).toBe("string")
+                    expect(typeof article.topic).toBe("string")
+                    expect(typeof article.created_at).toBe("string")
+                    expect(typeof article.votes).toBe("number")
+                    expect(typeof article.article_img_url).toBe("string")
+                    expect(typeof article.comment_count).toBe("number")
+                })
+            })
+        })
     })
 })
 
 describe("/*", () => {
-    test("400: Responds with an error if given an invalid endpoint", () => {
+    test("404: Responds with an error if given an invalid endpoint", () => {
         return request(app)
         .get("/api/invalid_endpoint")
         .expect(404)

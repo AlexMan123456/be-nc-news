@@ -9,4 +9,20 @@ function fetchArticleById(articleId){
     })
 }
 
-module.exports = { fetchArticleById }
+function fetchAllArticles(){
+    return db.query(
+        `SELECT articles.*, COUNT(comments) AS comment_count
+        FROM articles LEFT JOIN comments 
+        ON comments.article_id = articles.article_id
+        GROUP BY articles.article_id
+        ORDER BY articles.created_at DESC`)
+        .then((data) => {
+            data.rows.forEach((article) => {
+                delete article.body
+                article.comment_count = Number(article.comment_count)
+            })
+            return data.rows
+        })
+}
+
+module.exports = { fetchArticleById, fetchAllArticles }
