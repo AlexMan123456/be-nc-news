@@ -1,9 +1,11 @@
 const express = require("express")
 const { getAllTopics } = require("./controllers/topics-controller.js")
 const { invalidEndpoint, internalServerError } = require("./controllers/error-handling.js")
+const { getAllEndpoints } = require("./controllers/endpoints-controller.js")
 const app = express()
 
 
+app.get("/api", getAllEndpoints)
 app.get("/api/topics", getAllTopics)
 
 //Error handling
