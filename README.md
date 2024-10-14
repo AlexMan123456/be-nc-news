@@ -1,6 +1,6 @@
 # Northcoders News API
 
-In order to connect with the databases locally, create a .env.test file to access the test data, and a .env.development file to access the development data. In .env.test, set PGDATABASE to nc_news_test, and in .env.development, set PGDATABASE to nc_news.
+In order to connect with the databases locally, create a .env.test file to access the test data, and a .env.development file to access the development data. In each, set the PGDATABASE environment variable accordingly.
 
 
 
