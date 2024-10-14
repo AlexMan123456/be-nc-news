@@ -137,6 +137,89 @@ describe("/api/articles/:article_id/comments", () => {
             })
         })
     })
+    describe("POST", () => {
+        test("201: Adds a comment to an article", () => {
+            return request(app)
+            .post("/api/articles/1/comments")
+            .send({
+                username: "butter_bridge",
+                body: "My comment"
+            })
+            .expect(201)
+            .then((response) => {
+                expect(typeof response.body.comment.comment_id).toBe("number")
+                expect(typeof response.body.comment.votes).toBe("number")
+                expect(typeof response.body.comment.created_at).toBe("string")
+                expect(response.body.comment.author).toBe("butter_bridge")
+                expect(response.body.comment.body).toBe("My comment")
+                expect(response.body.comment.article_id).toBe(1)
+            })
+        })
+        test("201: If any extra properties exist on comment object being sent, ignore other properties and add comment as usual", () => {
+            return request(app)
+            .post("/api/articles/1/comments")
+            .send({
+                username: "butter_bridge",
+                body: "My comment",
+                extraKey: "extra content"
+            })
+            .expect(201)
+            .then((response) => {
+                expect(typeof response.body.comment.comment_id).toBe("number")
+                expect(typeof response.body.comment.votes).toBe("number")
+                expect(typeof response.body.comment.created_at).toBe("string")
+                expect(response.body.comment.author).toBe("butter_bridge")
+                expect(response.body.comment.body).toBe("My comment")
+                expect(response.body.comment.article_id).toBe(1)
+            })
+        })
+        test("400: Sends a bad request message if comment object being sent does not contain a username", () => {
+            return request(app)
+            .post("/api/articles/1/comments")
+            .send({
+                body: "My comment"
+            })
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Request must contain username")
+            })
+        })
+        test("400: Sends a bad request message if comment object being sent does not contain a body", () => {
+            return request(app)
+            .post("/api/articles/1/comments")
+            .send({
+                username: "butter_bridge"
+            })
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Request must contain body")
+            })
+        })
+        test("400: Sends a bad request message if given an invalid article ID", () => {
+            return request(app)
+            .post("/api/articles/invalid_id/comments")
+            .send({
+                username: "butter_bridge",
+                body: "My comment"
+            })
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("404: Sends a not found message if given a valid ID, but the article associated with that ID does not exist", () => {
+            return request(app)
+            .post("/api/articles/314159/comments")
+            .send({
+                username: "butter_bridge",
+                body: "My comment"
+            })
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Not found")
+            })
+        })
+    })
 })
 
 describe("/*", () => {
