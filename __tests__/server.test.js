@@ -102,6 +102,43 @@ describe("/api/articles", () => {
     })
 })
 
+describe("/api/articles/:article_id/comments", () => {
+    describe("GET", () => {
+        test("200: Responds with an array of all comments associated with a given ID", () => {
+            return request(app)
+            .get("/api/articles/1/comments")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.comments.length).toBe(11)
+                response.body.comments.forEach((comment) => {
+                    expect(typeof comment.comment_id).toBe("number")
+                    expect(typeof comment.votes).toBe("number")
+                    expect(typeof comment.created_at).toBe("string")
+                    expect(typeof comment.author).toBe("string")
+                    expect(typeof comment.body).toBe("string")
+                    expect(comment.article_id).toBe(1)
+                })
+            })
+        })
+        test("400: Responds with a bad request message if given an invalid ID", () => {
+            return request(app)
+            .get("/api/articles/invalid_id/comments")
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("404: Responds with a not found message if given a valid ID, but the article associated with it does not exist", () => {
+            return request(app)
+            .get("/api/articles/420/comments")
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Article not found")
+            })
+        })
+    })
+})
+
 describe("/*", () => {
     test("404: Responds with an error if given an invalid endpoint", () => {
         return request(app)
