@@ -12,7 +12,6 @@ function getAllArticles(request, response, next){
     fetchAllArticles(request.query.sort_by, request.query.order, request.query.topic).then((articles) => {
         response.status(200).send({articles})
     }).catch((err) => {
-        console.log(err)
         next(err)
     })
 }
