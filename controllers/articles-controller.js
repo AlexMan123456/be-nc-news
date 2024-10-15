@@ -9,7 +9,7 @@ function getArticleById(request, response, next){
 }
 
 function getAllArticles(request, response, next){
-    fetchAllArticles().then((articles) => {
+    fetchAllArticles(request.query.sort_by, request.query.order).then((articles) => {
         response.status(200).send({articles})
     }).catch((err) => {
         next(err)
