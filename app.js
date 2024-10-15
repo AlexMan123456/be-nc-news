@@ -4,7 +4,7 @@ const { getAllTopics } = require("./controllers/topics-controller.js")
 const { invalidEndpoint, internalServerError, sqlErrors, customErrors } = require("./controllers/error-handling.js")
 const { getAllEndpoints } = require("./controllers/endpoints-controller.js")
 const { getArticleById, getAllArticles, patchVoteCount } = require("./controllers/articles-controller.js")
-const { getCommentsByArticleId, postCommentToArticle } = require("./controllers/comments-controller.js")
+const { getCommentsByArticleId, postCommentToArticle, deleteComment } = require("./controllers/comments-controller.js")
 const { getAllUsers } = require("./controllers/users-controller.js")
 const app = express()
 
@@ -24,6 +24,9 @@ app.post("/api/articles/:article_id/comments", postCommentToArticle)
 
 //Patch requests
 app.patch("/api/articles/:article_id", patchVoteCount)
+
+//Delete requests
+app.delete("/api/comments/:comment_id", deleteComment)
 
 //Error handling
 app.use(invalidEndpoint)

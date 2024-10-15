@@ -357,6 +357,32 @@ describe("/api/users", () => {
     })
 })
 
+describe("/api/comments/:comment_id", () => {
+    describe("DELETE", () => {
+        test("204: Deletes the comment with the associated ID", () => {
+            return request(app)
+            .delete("/api/comments/3")
+            .expect(204)
+        })
+        test("400: Returns a bad request message if ID is invalid", () => {
+            return request(app)
+            .delete("/api/comments/invalid_comment_id")
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("404: Returns a not found message if ID is valid but the comment associated with it does not exist", () => {
+            return request(app)
+            .delete("/api/comments/360")
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Comment not found")
+            })
+        })
+    })
+})
+
 describe("/*", () => {
     test("404: Responds with an error if given an invalid endpoint", () => {
         return request(app)

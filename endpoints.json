@@ -118,6 +118,11 @@
         "created_at": 1604113380000
       }
     }
+  },
+  "DELETE /api/comments/:comment_id": {
+    "description": "deletes a comment given its ID",
+    "exampleRequest": "/api/comments/1",
+    "exampleResponse": "Does not respond with anything - comment just gets deleted"
   }
 }
 
