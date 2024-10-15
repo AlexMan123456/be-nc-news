@@ -4,6 +4,7 @@ const db = require("../db/connection.js")
 const request = require("supertest")
 const app = require("../app.js")
 const endpoints = require("../endpoints.json")
+require("jest-sorted")
 
 beforeEach(() => {
     return seed(data)
@@ -192,6 +193,107 @@ describe("/api/articles", () => {
                     expect(typeof article.votes).toBe("number")
                     expect(typeof article.article_img_url).toBe("string")
                     expect(typeof article.comment_count).toBe("number")
+                })
+            })
+        })
+        test("200: Sorts articles by created_at date in descending order by default", () => {
+            return request(app)
+            .get("/api/articles")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.articles).toBeSortedBy("created_at", {descending: true})
+            })
+        })
+        describe("Extra queries", () => {
+            test("200: Sorts by the given sort_by query when given a valid column to sort by", () => {
+                return Promise.all([request(app)
+                    .get("/api/articles?sort_by=article_id")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("article_id", {descending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?sort_by=author")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("author", {descending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?sort_by=title")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("title", {descending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?sort_by=topic")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("topic", {descending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?sort_by=created_at")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("created_at", {descending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?sort_by=votes")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("votes", {descending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?sort_by=comment_count")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("comment_count", {descending: true})
+                    })
+                ])
+            })
+            test("200: Sorts in ascending order when given an order query of asc, case insensitive", () => {
+                return Promise.all([
+                    request(app)
+                    .get("/api/articles?order=asc")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("created_at", {ascending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?order=ASC")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("created_at", {ascending: true})
+                    }),
+                    request(app)
+                    .get("/api/articles?order=aSc")
+                    .expect(200)
+                    .then((response) => {
+                        expect(response.body.articles).toBeSortedBy("created_at", {ascending: true})
+                    }),
+                ])
+            })
+            test("200: Sorts in ascending order by given sort_by query when order is asc", () => {
+                return request(app)
+                .get("/api/articles?sort_by=article_id&order=asc")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.articles).toBeSortedBy("article_id", {ascending: true})
+                })
+            })
+            test("400: Returns a bad request message when given an invalid sort_by query", () => {
+                return request(app)
+                .get("/api/articles?sort_by=invalid_sort_by")
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                })
+            })
+            test("400: Returns a bad request message when given an invalid order query", () => {
+                return request(app)
+                .get("/api/articles?sort_by=invalid_order")
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
                 })
             })
         })
