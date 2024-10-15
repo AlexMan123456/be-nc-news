@@ -339,6 +339,24 @@ describe("/api/articles/:article_id/comments", () => {
     })
 })
 
+describe("/api/users", () => {
+    describe("GET", () => {
+        test("200: Responds with an array containing all users", () => {
+            return request(app)
+            .get("/api/users")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.users.length).toBe(4)
+                response.body.users.forEach((user) => {
+                    expect(typeof user.username).toBe("string")
+                    expect(typeof user.name).toBe("string")
+                    expect(typeof user.avatar_url).toBe("string")
+                })
+            })
+        })
+    })
+})
+
 describe("/*", () => {
     test("404: Responds with an error if given an invalid endpoint", () => {
         return request(app)
