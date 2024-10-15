@@ -120,6 +120,14 @@ describe("/api/articles/:article_id/comments", () => {
                 })
             })
         })
+        test("200: Responds with an empty array if given an ID from an article containing no comments", () => {
+            return request(app)
+            .get("/api/articles/2/comments")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.comments.length).toBe(0)
+            })
+        })
         test("400: Responds with a bad request message if given an invalid ID", () => {
             return request(app)
             .get("/api/articles/invalid_id/comments")
@@ -171,6 +179,7 @@ describe("/api/articles/:article_id/comments", () => {
                 expect(response.body.comment.author).toBe("butter_bridge")
                 expect(response.body.comment.body).toBe("My comment")
                 expect(response.body.comment.article_id).toBe(1)
+                expect(response.body.comment).not.toHaveProperty("extraKey")
             })
         })
         test("400: Sends a bad request message if comment object being sent does not contain a username", () => {
@@ -193,6 +202,18 @@ describe("/api/articles/:article_id/comments", () => {
             .expect(400)
             .then((response) => {
                 expect(response.body.message).toBe("Request must contain body")
+            })
+        })
+        test("404: Sends a not found message if username does not exist in database", () => {
+            return request(app)
+            .post("/api/articles/1/comments")
+            .send({
+                username: "unknown_user",
+                body: "My comment"
+            })
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Not found")
             })
         })
         test("400: Sends a bad request message if given an invalid article ID", () => {
