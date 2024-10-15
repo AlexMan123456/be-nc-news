@@ -3,7 +3,7 @@ const express = require("express")
 const { getAllTopics } = require("./controllers/topics-controller.js")
 const { invalidEndpoint, internalServerError, sqlErrors, customErrors } = require("./controllers/error-handling.js")
 const { getAllEndpoints } = require("./controllers/endpoints-controller.js")
-const { getArticleById, getAllArticles } = require("./controllers/articles-controller.js")
+const { getArticleById, getAllArticles, patchVoteCount } = require("./controllers/articles-controller.js")
 const { getCommentsByArticleId, postCommentToArticle } = require("./controllers/comments-controller.js")
 const app = express()
 
@@ -19,6 +19,9 @@ app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
 
 //Post requests
 app.post("/api/articles/:article_id/comments", postCommentToArticle)
+
+//Patch requests
+app.patch("/api/articles/:article_id", patchVoteCount)
 
 //Error handling
 app.use(invalidEndpoint)

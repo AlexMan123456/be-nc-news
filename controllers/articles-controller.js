@@ -1,4 +1,4 @@
-const { fetchArticleById, fetchAllArticles } = require("../models/articles-model")
+const { fetchArticleById, fetchAllArticles, incrementVoteCount } = require("../models/articles-model")
 
 function getArticleById(request, response, next){
     fetchArticleById(request.params.article_id).then((article) => {
@@ -16,4 +16,12 @@ function getAllArticles(request, response, next){
     })
 }
 
-module.exports = { getArticleById, getAllArticles }
+function patchVoteCount(request, response, next){
+    incrementVoteCount(request.body.inc_votes, request.params.article_id).then((updatedArticle) => {
+        response.status(200).send({updatedArticle})
+    }).catch((err) => {
+        next(err)
+    })
+}
+
+module.exports = { getArticleById, getAllArticles, patchVoteCount }

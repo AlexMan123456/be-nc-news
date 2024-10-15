@@ -47,10 +47,10 @@ describe("/api/articles/:article_id", () => {
     describe("GET", () => {
         test("200: Responds with an article object containing all correct properties with correct types, matched with the correct ID", () => {
             return request(app)
-            .get("/api/articles/1")
+            .get("/api/articles/2")
             .expect(200)
             .then((response) => {
-                expect(response.body.article.article_id).toBe(1)
+                expect(response.body.article.article_id).toBe(2)
                 expect(typeof response.body.article.author).toBe("string")
                 expect(typeof response.body.article.title).toBe("string")
                 expect(typeof response.body.article.body).toBe("string")
@@ -71,6 +71,102 @@ describe("/api/articles/:article_id", () => {
         test("404: Responds with a not found message if given a valid ID, but the article associated with it does not exist", () => {
             return request(app)
             .get("/api/articles/69")
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Article not found")
+            })
+        })
+    })
+    describe("PATCH", () => {
+        test("200: Increments the vote count by the given amount", () => {
+            return request(app)
+            .patch("/api/articles/1")
+            .send({inc_votes: 10})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedArticle.article_id).toBe(1)
+                expect(response.body.updatedArticle.votes).toBe(110)
+                expect(typeof response.body.updatedArticle.author).toBe("string")
+                expect(typeof response.body.updatedArticle.title).toBe("string")
+                expect(typeof response.body.updatedArticle.body).toBe("string")
+                expect(typeof response.body.updatedArticle.topic).toBe("string")
+                expect(typeof response.body.updatedArticle.created_at).toBe("string")
+                expect(typeof response.body.updatedArticle.article_img_url).toBe("string")
+            })
+        })
+        test("200: Decrements the vote count by the given amount", () => {
+            request(app)
+            .patch("/api/articles/1")
+            .send({inc_votes: -10})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedArticle.article_id).toBe(1)
+                expect(response.body.updatedArticle.votes).toBe(90)
+                expect(typeof response.body.updatedArticle.author).toBe("string")
+                expect(typeof response.body.updatedArticle.title).toBe("string")
+                expect(typeof response.body.updatedArticle.body).toBe("string")
+                expect(typeof response.body.updatedArticle.topic).toBe("string")
+                expect(typeof response.body.updatedArticle.created_at).toBe("string")
+                expect(typeof response.body.updatedArticle.article_img_url).toBe("string")
+            })
+        })
+        test("200: Ignore any extra keys on request body and update votes as usual", () => {
+            return request(app)
+            .patch("/api/articles/1")
+            .send({inc_votes: 10, extraKey: 5})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedArticle.article_id).toBe(1)
+                expect(response.body.updatedArticle.votes).toBe(110)
+                expect(typeof response.body.updatedArticle.author).toBe("string")
+                expect(typeof response.body.updatedArticle.title).toBe("string")
+                expect(typeof response.body.updatedArticle.body).toBe("string")
+                expect(typeof response.body.updatedArticle.topic).toBe("string")
+                expect(typeof response.body.updatedArticle.created_at).toBe("string")
+                expect(typeof response.body.updatedArticle.article_img_url).toBe("string")
+                expect(typeof response.body.updatedArticle).not.toHaveProperty("extraKey")
+            })
+        })
+        test("400: Responds with a bad request message if inc_votes key is not found on response body", () => {
+            return request(app)
+            .patch("/api/articles/1")
+            .send({})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("One or more properties must not be null")
+            })
+        })
+        test("400: Responds with a bad request message if contents of inc_votes key is not a number", () => {
+            return request(app)
+            .patch("/api/articles/1")
+            .send({inc_votes: "abc"})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("400: Responds with a bad request message if contents of inc_votes key is a number but not an integer", () => {
+            return request(app)
+            .patch("/api/articles/1")
+            .send({inc_votes: 10.5})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("400: Responds with a bad request message if article_id is invalid", () => {
+            return request(app)
+            .patch("/api/articles/invalid_article")
+            .send({inc_votes: 10})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("404: Responds with a not found message if article_id is valid, but the article associated with it does not exist", () => {
+            return request(app)
+            .patch("/api/articles/271828")
+            .send({inc_votes: 10})
             .expect(404)
             .then((response) => {
                 expect(response.body.message).toBe("Article not found")
@@ -190,7 +286,7 @@ describe("/api/articles/:article_id/comments", () => {
             })
             .expect(400)
             .then((response) => {
-                expect(response.body.message).toBe("Request must contain username")
+                expect(response.body.message).toBe("One or more properties must not be null")
             })
         })
         test("400: Sends a bad request message if comment object being sent does not contain a body", () => {
@@ -201,7 +297,7 @@ describe("/api/articles/:article_id/comments", () => {
             })
             .expect(400)
             .then((response) => {
-                expect(response.body.message).toBe("Request must contain body")
+                expect(response.body.message).toBe("One or more properties must not be null")
             })
         })
         test("404: Sends a not found message if username does not exist in database", () => {
