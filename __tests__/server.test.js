@@ -280,6 +280,32 @@ describe("/api/articles", () => {
                     expect(response.body.articles).toBeSortedBy("article_id", {ascending: true})
                 })
             })
+            test("200: Filters articles by given topic when given a valid topic query", () => {
+                return request(app)
+                .get("/api/articles?topic=mitch")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.articles.length).toBe(12)
+                    response.body.articles.forEach((article) => {
+                        expect(typeof article.article_id).toBe("number")
+                        expect(typeof article.author).toBe("string")
+                        expect(typeof article.title).toBe("string")
+                        expect(typeof article.created_at).toBe("string")
+                        expect(typeof article.votes).toBe("number")
+                        expect(typeof article.article_img_url).toBe("string")
+                        expect(typeof article.comment_count).toBe("number")
+                        expect(article.topic).toBe("mitch")
+                    })
+                })
+            })
+            test("200: Responds with an empty array when given a topic that exists but has no articles", () => {
+                return request(app)
+                .get("/api/articles?topic=paper")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.articles.length).toBe(0)
+                })
+            })
             test("400: Returns a bad request message when given an invalid sort_by query", () => {
                 return request(app)
                 .get("/api/articles?sort_by=invalid_sort_by")
@@ -294,6 +320,14 @@ describe("/api/articles", () => {
                 .expect(400)
                 .then((response) => {
                     expect(response.body.message).toBe("Bad request")
+                })
+            })
+            test("404: Responds with not found when given a topic that doesn't exist", () => {
+                return request(app)
+                .get("/api/articles?topic=nonexistent_topic")
+                .expect(404)
+                .then((response) => {
+                    expect(response.body.message).toBe("Not found")
                 })
             })
         })

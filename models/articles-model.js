@@ -9,12 +9,21 @@ function fetchArticleById(articleId){
     })
 }
 
-function fetchAllArticles(sortBy="created_at", order="DESC"){
+function fetchAllArticles(sortBy="created_at", order="DESC", topic){
     let queryString = `
     SELECT articles.*, COUNT(comments)::INT AS comment_count
     FROM articles LEFT JOIN comments 
-    ON comments.article_id = articles.article_id
-    GROUP BY articles.article_id `
+    ON comments.article_id = articles.article_id `
+    const promises = []
+    
+    const queryValues = []
+    if(topic !== undefined){
+        queryString = queryString + "WHERE topic=$1 "
+        queryValues.push(topic)
+        promises.push(db.query("SELECT * FROM topics WHERE slug = $1", [topic]))
+    }
+
+    queryString = queryString + "GROUP BY articles.article_id "
 
     const validSortByQueries = ["article_id", "author", "title", "topic", "created_at", "votes", "comment_count"]
     if(validSortByQueries.includes(sortBy) === false){
@@ -32,12 +41,18 @@ function fetchAllArticles(sortBy="created_at", order="DESC"){
         queryString = queryString + `ORDER BY articles.${sortBy} ${order}`
     }
 
-    return db.query(queryString)
-        .then((data) => {
-            data.rows.forEach((article) => {
+    promises.unshift(db.query(queryString, queryValues))
+
+    return Promise.all(promises)
+    .then((results) => {
+            const articles = results[0].rows
+            if(articles.length === 0 && results[1].rows.length === 0){
+                return Promise.reject({status: 404, message: "Not found"})
+            }
+            articles.forEach((article) => {
                 delete article.body
             })
-            return data.rows
+            return articles
         })
 }
 
