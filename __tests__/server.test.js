@@ -58,6 +58,7 @@ describe("/api/articles/:article_id", () => {
                 expect(typeof response.body.article.topic).toBe("string")
                 expect(typeof response.body.article.created_at).toBe("string")
                 expect(typeof response.body.article.votes).toBe("number")
+                expect(typeof response.body.article.comment_count).toBe("number")
                 expect(typeof response.body.article.article_img_url).toBe("string")
             })
         })
