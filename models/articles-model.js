@@ -62,7 +62,7 @@ function fetchAllArticles(sortBy="created_at", order="DESC", topic){
         })
 }
 
-function incrementVoteCount(newVote, articleId){
+function incrementArticleVoteCount(newVote, articleId){
     return db.query(`
     UPDATE articles 
     SET votes = votes+$1 
@@ -76,4 +76,4 @@ function incrementVoteCount(newVote, articleId){
     })
 }
 
-module.exports = { fetchArticleById, fetchAllArticles, incrementVoteCount }
+module.exports = { fetchArticleById, fetchAllArticles, incrementArticleVoteCount }

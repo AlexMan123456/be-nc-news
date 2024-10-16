@@ -1,5 +1,5 @@
 const express = require("express")
-const { getAllArticles, getArticleById, patchVoteCount } = require("../controllers/articles-controller")
+const { getAllArticles, getArticleById, patchArticleVoteCount } = require("../controllers/articles-controller")
 const { getCommentsByArticleId, postCommentToArticle } = require("../controllers/comments-controller")
 const router = express.Router()
 
@@ -11,6 +11,6 @@ router.route("/:article_id/comments")
 
 router.route("/:article_id")
 .get(getArticleById)
-.patch(patchVoteCount)
+.patch(patchArticleVoteCount)
 
 module.exports = router

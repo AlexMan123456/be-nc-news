@@ -518,6 +518,72 @@ describe("/api/comments/:comment_id", () => {
             })
         })
     })
+    describe("PATCH", () => {
+        test("200: Increments the vote count by the given amount", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: 4})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedComment.votes).toBe(20)
+            })
+        })
+        test("200: Decrements the vote count by the given amount", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: -6})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedComment.votes).toBe(10)
+            })
+        })
+        test("200: Ignores any extra keys on object being sent", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: 4, extraKey: 5})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedComment.votes).toBe(20)
+                expect(response.body.updatedComment).not.toHaveProperty("extraKey")
+            })
+        })
+        test("400: Returns a bad request message if inc_votes key not provided", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("One or more properties must not be null")
+            })
+        })
+        test("400: Returns a bad request message if inc_votes is not a number", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: "a"})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("400: Returns a bad request message if article_id is invalid", () => {
+            return request(app)
+            .patch("/api/comments/invalid_id")
+            .send({inc_votes: 4})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("404: Returns a not found message if article_id is invalid", () => {
+            return request(app)
+            .patch("/api/comments/628")
+            .send({inc_votes: 4})
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Comment not found")
+            })
+        })
+    })
 })
 
 describe("/*", () => {

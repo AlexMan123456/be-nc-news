@@ -1,7 +1,9 @@
 const express = require("express")
-const { deleteComment } = require("../controllers/comments-controller")
+const { deleteComment, patchCommentVoteCount } = require("../controllers/comments-controller")
 const router = express.Router()
 
-router.delete("/:comment_id", deleteComment)
+router.route("/:comment_id")
+.delete(deleteComment)
+.patch(patchCommentVoteCount)
 
 module.exports = router
