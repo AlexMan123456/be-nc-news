@@ -25,8 +25,8 @@ function patchArticleVoteCount(request, response, next){
 }
 
 function postNewArticle(request, response, next){
-    uploadNewArticle(request.body).then((postedComment) => {
-        response.status(201).send({postedComment})
+    uploadNewArticle(request.body).then((postedArticle) => {
+        response.status(201).send({postedArticle})
     }).catch((err) => {
         next(err)
     })
