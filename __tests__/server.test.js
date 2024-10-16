@@ -501,7 +501,7 @@ describe("/api/comments/:comment_id", () => {
             .delete("/api/comments/3")
             .expect(204)
         })
-        test("400: Returns a bad request message if ID is invalid", () => {
+        test("400: Responds with a bad request message if ID is invalid", () => {
             return request(app)
             .delete("/api/comments/invalid_comment_id")
             .expect(400)
@@ -509,12 +509,35 @@ describe("/api/comments/:comment_id", () => {
                 expect(response.body.message).toBe("Bad request")
             })
         })
-        test("404: Returns a not found message if ID is valid but the comment associated with it does not exist", () => {
+        test("404: Responds with a not found message if ID is valid but the comment associated with it does not exist", () => {
             return request(app)
             .delete("/api/comments/360")
             .expect(404)
             .then((response) => {
                 expect(response.body.message).toBe("Comment not found")
+            })
+        })
+    })
+})
+
+describe("/api/users/:username", () => {
+    describe("GET", () => {
+        test("200: Responds with the correct user when given a valid username", () => {
+            return request(app)
+            .get("/api/users/butter_bridge")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.user.username).toBe("butter_bridge")
+                expect(typeof response.body.user.name).toBe("string")
+                expect(typeof response.body.user.avatar_url).toBe("string")
+            })
+        })
+        test("404: Responds with a not found message when given a user that does nott exist in database", () => {
+            return request(app)
+            .get("/api/users/nonexistent_user")
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("User not found")
             })
         })
     })

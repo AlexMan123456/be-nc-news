@@ -5,7 +5,7 @@ const { invalidEndpoint, internalServerError, sqlErrors, customErrors } = requir
 const { getAllEndpoints } = require("./controllers/endpoints-controller.js")
 const { getArticleById, getAllArticles, patchVoteCount } = require("./controllers/articles-controller.js")
 const { getCommentsByArticleId, postCommentToArticle, deleteComment } = require("./controllers/comments-controller.js")
-const { getAllUsers } = require("./controllers/users-controller.js")
+const { getAllUsers, getUserByUsername } = require("./controllers/users-controller.js")
 const app = express()
 
 //Needed to parse request body
@@ -18,6 +18,7 @@ app.get("/api/users", getAllUsers)
 app.get("/api/articles/:article_id", getArticleById)
 app.get("/api/articles", getAllArticles)
 app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
+app.get("/api/users/:username", getUserByUsername)
 
 //Post requests
 app.post("/api/articles/:article_id/comments", postCommentToArticle)
