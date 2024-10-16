@@ -674,7 +674,12 @@ describe("/api/comments/:comment_id", () => {
             .send({inc_votes: 4})
             .expect(200)
             .then((response) => {
+                expect(response.body.updatedComment.comment_id).toBe(1)
+                expect(typeof response.body.updatedComment.body).toBe("string")
                 expect(response.body.updatedComment.votes).toBe(20)
+                expect(typeof response.body.updatedComment.author).toBe("string")
+                expect(typeof response.body.updatedComment.article_id).toBe("number")
+                expect(typeof response.body.updatedComment.created_at).toBe("string")
             })
         })
         test("200: Decrements the vote count by the given amount", () => {
@@ -683,7 +688,12 @@ describe("/api/comments/:comment_id", () => {
             .send({inc_votes: -6})
             .expect(200)
             .then((response) => {
+                expect(response.body.updatedComment.comment_id).toBe(1)
+                expect(typeof response.body.updatedComment.body).toBe("string")
                 expect(response.body.updatedComment.votes).toBe(10)
+                expect(typeof response.body.updatedComment.author).toBe("string")
+                expect(typeof response.body.updatedComment.article_id).toBe("number")
+                expect(typeof response.body.updatedComment.created_at).toBe("string")
             })
         })
         test("200: Ignores any extra keys on object being sent", () => {
@@ -692,7 +702,12 @@ describe("/api/comments/:comment_id", () => {
             .send({inc_votes: 4, extraKey: 5})
             .expect(200)
             .then((response) => {
+                expect(response.body.updatedComment.comment_id).toBe(1)
+                expect(typeof response.body.updatedComment.body).toBe("string")
                 expect(response.body.updatedComment.votes).toBe(20)
+                expect(typeof response.body.updatedComment.author).toBe("string")
+                expect(typeof response.body.updatedComment.article_id).toBe("number")
+                expect(typeof response.body.updatedComment.created_at).toBe("string")
                 expect(response.body.updatedComment).not.toHaveProperty("extraKey")
             })
         })
