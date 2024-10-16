@@ -333,6 +333,155 @@ describe("/api/articles", () => {
             })
         })
     })
+    describe("POST", () => {
+        test("201: Successfully posts the article and returns an object representation of it with all correct properties", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test Title",
+                body: "Test body",
+                topic: "paper",
+                article_img_url: "https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700"
+            })
+            .expect(201)
+            .then((response) => {
+                expect(response.body.postedComment.author).toBe("butter_bridge")
+                expect(response.body.postedComment.title).toBe("Test Title")
+                expect(response.body.postedComment.body).toBe("Test body")
+                expect(response.body.postedComment.topic).toBe("paper")
+                expect(response.body.postedComment.article_img_url).toBe("https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700")
+                expect(typeof response.body.postedComment.article_id).toBe("number")
+                expect(response.body.postedComment.votes).toBe(0)
+                expect(typeof response.body.postedComment.votes).toBe("number")
+                expect(response.body.postedComment.comment_count).toBe(0)
+            })
+        })
+        test("201: Ignores any extra properties on object being posted", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test Title",
+                body: "Test body",
+                topic: "paper",
+                article_img_url: "https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700",
+                extraKey: "extra content"
+            })
+            .expect(201)
+            .then((response) => {
+                expect(response.body.postedComment.author).toBe("butter_bridge")
+                expect(response.body.postedComment.title).toBe("Test Title")
+                expect(response.body.postedComment.body).toBe("Test body")
+                expect(response.body.postedComment.topic).toBe("paper")
+                expect(response.body.postedComment.article_img_url).toBe("https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700")
+                expect(typeof response.body.postedComment.article_id).toBe("number")
+                expect(response.body.postedComment.votes).toBe(0)
+                expect(typeof response.body.postedComment.votes).toBe("number")
+                expect(response.body.postedComment.comment_count).toBe(0)
+                expect(response.body.postedComment).not.toHaveProperty("extraKey")
+            })
+        })
+        test("201: Defaults to the correct image URL if no article_img_url is provided", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test Title",
+                body: "Test body",
+                topic: "paper",
+            })
+            .expect(201)
+            .then((response) => {
+                expect(response.body.postedComment.author).toBe("butter_bridge")
+                expect(response.body.postedComment.title).toBe("Test Title")
+                expect(response.body.postedComment.body).toBe("Test body")
+                expect(response.body.postedComment.topic).toBe("paper")
+                expect(response.body.postedComment.article_img_url).toBe("https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700")
+                expect(typeof response.body.postedComment.article_id).toBe("number")
+                expect(response.body.postedComment.votes).toBe(0)
+                expect(typeof response.body.postedComment.votes).toBe("number")
+                expect(response.body.postedComment.comment_count).toBe(0)
+                expect(response.body.postedComment).not.toHaveProperty("extraKey")
+            })
+        })
+        test("400: Returns a bad request message if any other property is missing", () => {
+            return Promise.all([
+                request(app)
+                .post("/api/articles")
+                .send({
+                    title: "Test title",
+                    body: "Test body",
+                    topic: "paper",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                }),
+                request(app)
+                .post("/api/articles")
+                .send({
+                    author: "butter_bridge",
+                    body: "Test body",
+                    topic: "paper",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                }),
+                request(app)
+                .post("/api/articles")
+                .send({
+                    author: "butter_bridge",
+                    title: "Test title",
+                    body: "Test body",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                }),
+                request(app)
+                .post("/api/articles")
+                .send({
+                    author: "butter_bridge",
+                    title: "Test title",
+                    topic: "paper",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                })
+            ])
+        })
+        test("404: Returns a not found message if given author does not exist in database", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "nonexistent_user",
+                title: "Test title",
+                body: "Test body",
+                topic: "paper",
+            })
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Not found")
+            })
+        })
+        test("404: Returns a not found message if given topic does not exist in database", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test title",
+                body: "Test body",
+                topic: "nonexistent topic",
+            })
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Not found")
+            })
+        })
+    })
 })
 
 describe("/api/articles/:article_id/comments", () => {
