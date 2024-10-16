@@ -76,4 +76,27 @@ function incrementArticleVoteCount(newVote, articleId){
     })
 }
 
-module.exports = { fetchArticleById, fetchAllArticles, incrementArticleVoteCount }
+function uploadNewArticle(newArticle){
+    Object.keys(newArticle).forEach((key) => {
+        const validColumns = ["author", "title", "body", "topic", "article_img_url"]
+        if(validColumns.includes(key) === false){
+            delete newArticle[key]
+        }
+    })
+    let queryString = "INSERT INTO articles"
+
+    if(Object.keys(newArticle).includes("article_img_url")){
+        queryString = queryString + "(author, title, body, topic, article_img_url) VALUES ($1, $2, $3, $4, $5) RETURNING *"
+    } else{
+        queryString = queryString + "(author, title, body, topic) VALUES ($1, $2, $3, $4) RETURNING *"
+    }
+
+    return db.query(queryString,
+    Object.values(newArticle))
+    .then((data) => {
+        data.rows[0].comment_count = 0
+        return data.rows[0]
+    })
+}
+
+module.exports = { fetchArticleById, fetchAllArticles, incrementArticleVoteCount, uploadNewArticle }

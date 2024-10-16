@@ -3,6 +3,9 @@ function invalidEndpoint(request, response, next){
 }
 
 function sqlErrors(err, request, response, next){
+    if(err.code === "08P01"){
+        response.status(400).send({message: "Bad request"})
+    }
     if(err.code === "22P02"){
         response.status(400).send({message: "Bad request"})
     }
