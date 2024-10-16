@@ -43,13 +43,13 @@
     }
   },
   "PATCH /api/articles/:article_id": {
-    "description": "increments the vote count by some amount",
+    "description": "increments the vote count of an article by some amount",
     "exampleRequest": "/api/articles/1",
     "exampleRequestBody": {
       "inc_votes": 1
     },
     "exampleResponse": {
-      "article": {
+      "updatedArticle": {
         "author": "weegembump",
         "title": "Seafood substitutions are increasing",
         "article_id": 1,
@@ -58,6 +58,22 @@
         "created_at": "2018-05-30T15:59:13.341Z",
         "votes": 1,
         "article_img_url": "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+      }
+    }
+  },
+  "PATCH /api/comments/:comment_id": {
+    "description": "Increments the vote count of a comment by some amount",
+    "exampleRequest": "/api/comments/1",
+    "exampleRequestBody": {
+      "inc_votes": 1
+    },
+    "exampleResponse": {
+      "updatedComment": {
+          "body": "The beautiful thing about treasure is that it exists. Got to find out what kind of sheets these are; not cotton, not rayon, silky.",
+          "votes": 14,
+          "author": "butter_bridge",
+          "article_id": 1,
+          "created_at": 1604113380000
       }
     }
   },
@@ -101,6 +117,18 @@
       }]
     }
   },
+  "GET /api/users/:username": {
+    "description": "serves an object representation of a user given their username",
+    "exampleRequest": "/api/users/1",
+    "exampleResponse": {
+      "users": {
+        "username": "butter_bridge",
+        "name": "jonny",
+        "avatar_url":
+          "https://www.healthytherapies.com/wp-content/uploads/2016/06/Lime3.jpg"
+      }
+    }
+  },
   "POST /api/articles/:article_id/comments": {
     "description": "posts a comment to a given article",
     "exampleRequest": "/api/articles/1/comments",
@@ -117,6 +145,31 @@
         "article_id": 1,
         "created_at": 1604113380000
       }
+    }
+  },
+  "POST /api/articles": {
+    "description": "posts an article",
+    "exampleRequest": "/api/articles",
+    "exampleRequestBody": {
+      "title": "Living in the shadow of a great man",
+      "topic": "mitch",
+      "author": "butter_bridge",
+      "body": "I find this existence challenging",
+      "created_at": 1594329060000,
+      "article_img_url":
+        "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700"
+    },
+    "exampleResponse": {
+      "title": "Living in the shadow of a great man",
+      "topic": "mitch",
+      "author": "butter_bridge",
+      "body": "I find this existence challenging",
+      "created_at": 1594329060000,
+      "article_img_url":
+      "https://images.pexels.com/photos/158651/news-newsletter-newspaper-information-158651.jpeg?w=700&h=700",
+      "articleId": 1,
+      "votes": 0,
+      "comment_count": 0
     }
   },
   "DELETE /api/comments/:comment_id": {
