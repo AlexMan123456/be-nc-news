@@ -29,6 +29,49 @@ describe("/api/topics", () => {
             })
         })
     })
+    describe("POST", () => {
+        test("200: Successfully posts the topic to the database and returns the posted topic", () => {
+            return request(app)
+            .post("/api/topics")
+            .send({description: "Test description", slug: "Test topic"})
+            .expect(201)
+            .then((response) => {
+                const newTopic = response.body.newTopic
+                expect(newTopic.description).toBe("Test description")
+                expect(newTopic.slug).toBe("Test topic")
+            })
+        })
+        test("200: Successfully posts the topic to the database and returns the posted topic, ignoring extra properties", () => {
+            return request(app)
+            .post("/api/topics")
+            .send({description: "Test description", slug: "Test topic", extraKey: "Extra value"})
+            .expect(201)
+            .then((response) => {
+                const newTopic = response.body.newTopic
+                expect(newTopic.description).toBe("Test description")
+                expect(newTopic.slug).toBe("Test topic")
+                expect(newTopic.slug).not.toHaveProperty("extraKey")
+            })
+        })
+        test("400: Responds with a bad request message when description is missing", () => {
+            return request(app)
+            .post("/api/topics")
+            .send({slug: "Test topic"})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("400: Responds with a bad request message when slug is missing", () => {
+            return request(app)
+            .post("/api/topics")
+            .send({description: "Test description"})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+    })
 })
 
 describe("/api", () => {
