@@ -1,10 +1,13 @@
 const db = require("../db/connection.js")
 
-function fetchCommentsByArticleId(articleId){
-    return db.query(
-        `SELECT * FROM comments
-        WHERE article_id = $1
-        ORDER BY created_at DESC`, [articleId])
+function fetchCommentsByArticleId(articleId, limit=10, pageNumber=1){
+    const offset = ((pageNumber-1)*limit)
+
+    return db.query(`SELECT * FROM comments
+    WHERE article_id = $1
+    ORDER BY created_at DESC
+    LIMIT $2 OFFSET $3`,
+    [articleId, limit, offset])
         .then((data) => {
             return data.rows
         })
