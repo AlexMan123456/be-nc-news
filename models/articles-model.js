@@ -15,18 +15,16 @@ function fetchArticleById(articleId){
     })
 }
 
-function fetchAllArticles(sortBy="created_at", order="DESC", topic){
+function fetchArticles(sortBy="created_at", order="DESC", topic, limit=10, pageNumber=1){
     let queryString = `
     SELECT articles.*, COUNT(comments)::INT AS comment_count
     FROM articles LEFT JOIN comments 
     ON comments.article_id = articles.article_id `
-    const promises = []
     
     const queryValues = []
     if(topic !== undefined){
-        queryString = queryString + "WHERE topic=$1 "
         queryValues.push(topic)
-        promises.push(db.query("SELECT * FROM topics WHERE slug = $1", [topic]))
+        queryString = queryString + `WHERE topic=$${queryValues.length} `
     }
 
     queryString = queryString + "GROUP BY articles.article_id "
@@ -42,24 +40,24 @@ function fetchAllArticles(sortBy="created_at", order="DESC", topic){
     }
     
     if(sortBy === "comment_count"){
-        queryString = queryString + `ORDER BY comment_count ${order}`
+        queryString = queryString + `ORDER BY comment_count ${order} `
     } else{
-        queryString = queryString + `ORDER BY articles.${sortBy} ${order}`
+        queryString = queryString + `ORDER BY articles.${sortBy} ${order} `
     }
 
-    promises.unshift(db.query(queryString, queryValues))
+    queryValues.push(limit)
+    queryString = queryString + `LIMIT $${queryValues.length} `
 
-    return Promise.all(promises)
-    .then((results) => {
-            const articles = results[0].rows
-            if(articles.length === 0 && results[1].rows.length === 0){
-                return Promise.reject({status: 404, message: "Not found"})
-            }
-            articles.forEach((article) => {
-                delete article.body
-            })
-            return articles
+    const offset = ((pageNumber-1)*limit)
+    queryValues.push(offset)
+    queryString = queryString + `OFFSET $${queryValues.length}`
+
+    return db.query(queryString, queryValues).then((data) => {
+        data.rows.forEach((article) => {
+            delete article.body
         })
+        return data.rows
+    })
 }
 
 function incrementArticleVoteCount(newVote, articleId){
@@ -99,4 +97,4 @@ function uploadNewArticle(newArticle){
     })
 }
 
-module.exports = { fetchArticleById, fetchAllArticles, incrementArticleVoteCount, uploadNewArticle }
+module.exports = { fetchArticleById, fetchArticles, incrementArticleVoteCount, uploadNewArticle }
