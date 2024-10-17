@@ -1,33 +1,21 @@
 //Imports
 const express = require("express")
-const { getAllTopics } = require("./controllers/topics-controller.js")
 const { invalidEndpoint, internalServerError, sqlErrors, customErrors } = require("./controllers/error-handling.js")
-const { getAllEndpoints } = require("./controllers/endpoints-controller.js")
-const { getArticleById, getAllArticles, patchVoteCount } = require("./controllers/articles-controller.js")
-const { getCommentsByArticleId, postCommentToArticle, deleteComment } = require("./controllers/comments-controller.js")
-const { getAllUsers, getUserByUsername } = require("./controllers/users-controller.js")
+const articles = require("./routers/articles-router.js")
+const topics = require("./routers/topics-router.js")
+const users = require("./routers/users-router.js")
+const endpoints = require("./routers/endpoints-router.js")
+const comments = require("./routers/comments-router.js")
 const app = express()
 
 //Needed to parse request body
 app.use(express.json())
 
-//Get requests
-app.get("/api", getAllEndpoints)
-app.get("/api/topics", getAllTopics)
-app.get("/api/users", getAllUsers)
-app.get("/api/articles/:article_id", getArticleById)
-app.get("/api/articles", getAllArticles)
-app.get("/api/articles/:article_id/comments", getCommentsByArticleId)
-app.get("/api/users/:username", getUserByUsername)
-
-//Post requests
-app.post("/api/articles/:article_id/comments", postCommentToArticle)
-
-//Patch requests
-app.patch("/api/articles/:article_id", patchVoteCount)
-
-//Delete requests
-app.delete("/api/comments/:comment_id", deleteComment)
+app.use("/api", endpoints)
+app.use("/api/topics", topics)
+app.use("/api/users", users)
+app.use("/api/articles", articles)
+app.use("/api/comments", comments)
 
 //Error handling
 app.use(invalidEndpoint)

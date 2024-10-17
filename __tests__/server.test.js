@@ -184,7 +184,7 @@ describe("/api/articles", () => {
             .get("/api/articles")
             .expect(200)
             .then((response) => {
-                expect(response.body.articles.length).toBe(13)
+                expect(response.body.total_count).toBe(10)
                 response.body.articles.forEach((article) => {
                     expect(typeof article.article_id).toBe("number")
                     expect(typeof article.author).toBe("string")
@@ -283,10 +283,10 @@ describe("/api/articles", () => {
             })
             test("200: Filters articles by given topic when given a valid topic query", () => {
                 return request(app)
-                .get("/api/articles?topic=mitch")
+                .get("/api/articles?topic=cats")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(12)
+                    expect(response.body.total_count).toBe(1)
                     response.body.articles.forEach((article) => {
                         expect(typeof article.article_id).toBe("number")
                         expect(typeof article.author).toBe("string")
@@ -295,7 +295,7 @@ describe("/api/articles", () => {
                         expect(typeof article.votes).toBe("number")
                         expect(typeof article.article_img_url).toBe("string")
                         expect(typeof article.comment_count).toBe("number")
-                        expect(article.topic).toBe("mitch")
+                        expect(article.topic).toBe("cats")
                     })
                 })
             })
@@ -304,7 +304,59 @@ describe("/api/articles", () => {
                 .get("/api/articles?topic=paper")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(0)
+                    expect(response.body.total_count).toBe(0)
+                })
+            })
+            test("200: Responds with the correct number of articles sorted in the correct order when given a limit", () => {
+                return request(app)
+                .get("/api/articles?limit=5")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.total_count).toBe(5)
+                    response.body.articles.forEach((article) => {
+                        expect(typeof article.article_id).toBe("number")
+                        expect(typeof article.author).toBe("string")
+                        expect(typeof article.title).toBe("string")
+                        expect(typeof article.created_at).toBe("string")
+                        expect(typeof article.votes).toBe("number")
+                        expect(typeof article.article_img_url).toBe("string")
+                        expect(typeof article.comment_count).toBe("number")
+                        expect(typeof article.topic).toBe("string")
+                    })
+                })
+            })
+            test("200: Responds with the correct number of articles starting from the correct position when given a page number using default limit", () => {
+                return request(app)
+                .get("/api/articles?&p=2")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.total_count).toBe(3)
+                    return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
+                }).then(([articles, data]) => {
+                    data.rows.slice(10,13).forEach((article, index) => {
+                        expect(article.article_id).toBe(articles[index].article_id)
+                    })
+                })
+            })
+            test("200: Responds with the correct number of articles starting from the correct position when given a page number and limit", () => {
+                return request(app)
+                .get("/api/articles?limit=5&p=2")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.total_count).toBe(5)
+                    return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
+                }).then(([articles, data]) => {
+                    data.rows.slice(5,10).forEach((article, index) => {
+                        expect(article.article_id).toBe(articles[index].article_id)
+                    })
+                })
+            })
+            test("200: Responds with an empty array when page number exceeds the maximum possible number of pages", () => {
+                return request(app)
+                .get("/api/articles?p=3")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.total_count).toBe(0)
                 })
             })
             test("400: Returns a bad request message when given an invalid sort_by query", () => {
@@ -330,6 +382,168 @@ describe("/api/articles", () => {
                 .then((response) => {
                     expect(response.body.message).toBe("Not found")
                 })
+            })
+            test("400: Responds with bad request when given an invalid limit", () => {
+                return request(app)
+                .get("/api/articles?limit=invalid_limit")
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                })
+            })
+            test("400: Responds with bad request when given an invalid page number", () => {
+                return request(app)
+                .get("/api/articles?p=invalid_page_number")
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                })
+            })
+        })
+    })
+    describe("POST", () => {
+        test("201: Successfully posts the article and returns an object representation of it with all correct properties", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test Title",
+                body: "Test body",
+                topic: "paper",
+                article_img_url: "https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700"
+            })
+            .expect(201)
+            .then((response) => {
+                expect(response.body.postedArticle.author).toBe("butter_bridge")
+                expect(response.body.postedArticle.title).toBe("Test Title")
+                expect(response.body.postedArticle.body).toBe("Test body")
+                expect(response.body.postedArticle.topic).toBe("paper")
+                expect(response.body.postedArticle.article_img_url).toBe("https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700")
+                expect(typeof response.body.postedArticle.article_id).toBe("number")
+                expect(response.body.postedArticle.votes).toBe(0)
+                expect(response.body.postedArticle.comment_count).toBe(0)
+            })
+        })
+        test("201: Ignores any extra properties on object being posted", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test Title",
+                body: "Test body",
+                topic: "paper",
+                article_img_url: "https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700",
+                extraKey: "extra content"
+            })
+            .expect(201)
+            .then((response) => {
+                expect(response.body.postedArticle.author).toBe("butter_bridge")
+                expect(response.body.postedArticle.title).toBe("Test Title")
+                expect(response.body.postedArticle.body).toBe("Test body")
+                expect(response.body.postedArticle.topic).toBe("paper")
+                expect(response.body.postedArticle.article_img_url).toBe("https://images.pexels.com/photos/373543/pexels-photo-373543.jpeg?w=700&h=700")
+                expect(typeof response.body.postedArticle.article_id).toBe("number")
+                expect(response.body.postedArticle.votes).toBe(0)
+                expect(response.body.postedArticle.comment_count).toBe(0)
+                expect(response.body.postedArticle).not.toHaveProperty("extraKey")
+            })
+        })
+        test("201: Defaults to the correct image URL if no article_img_url is provided", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test Title",
+                body: "Test body",
+                topic: "paper",
+            })
+            .expect(201)
+            .then((response) => {
+                expect(response.body.postedArticle.author).toBe("butter_bridge")
+                expect(response.body.postedArticle.title).toBe("Test Title")
+                expect(response.body.postedArticle.body).toBe("Test body")
+                expect(response.body.postedArticle.topic).toBe("paper")
+                expect(response.body.postedArticle.article_img_url).toBe("https://images.pexels.com/photos/97050/pexels-photo-97050.jpeg?w=700&h=700")
+                expect(typeof response.body.postedArticle.article_id).toBe("number")
+                expect(response.body.postedArticle.votes).toBe(0)
+                expect(response.body.postedArticle.comment_count).toBe(0)
+                expect(response.body.postedArticle).not.toHaveProperty("extraKey")
+            })
+        })
+        test("400: Returns a bad request message if any other property is missing", () => {
+            return Promise.all([
+                request(app)
+                .post("/api/articles")
+                .send({
+                    title: "Test title",
+                    body: "Test body",
+                    topic: "paper",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                }),
+                request(app)
+                .post("/api/articles")
+                .send({
+                    author: "butter_bridge",
+                    body: "Test body",
+                    topic: "paper",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                }),
+                request(app)
+                .post("/api/articles")
+                .send({
+                    author: "butter_bridge",
+                    title: "Test title",
+                    body: "Test body",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                }),
+                request(app)
+                .post("/api/articles")
+                .send({
+                    author: "butter_bridge",
+                    title: "Test title",
+                    topic: "paper",
+                })
+                .expect(400)
+                .then((response) => {
+                    expect(response.body.message).toBe("Bad request")
+                })
+            ])
+        })
+        test("404: Returns a not found message if given author does not exist in database", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "nonexistent_user",
+                title: "Test title",
+                body: "Test body",
+                topic: "paper",
+            })
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Not found")
+            })
+        })
+        test("404: Returns a not found message if given topic does not exist in database", () => {
+            return request(app)
+            .post("/api/articles")
+            .send({
+                author: "butter_bridge",
+                title: "Test title",
+                body: "Test body",
+                topic: "nonexistent topic",
+            })
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Not found")
             })
         })
     })
@@ -512,6 +726,87 @@ describe("/api/comments/:comment_id", () => {
         test("404: Responds with a not found message if ID is valid but the comment associated with it does not exist", () => {
             return request(app)
             .delete("/api/comments/360")
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Comment not found")
+            })
+        })
+    })
+    describe("PATCH", () => {
+        test("200: Increments the vote count by the given amount", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: 4})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedComment.comment_id).toBe(1)
+                expect(typeof response.body.updatedComment.body).toBe("string")
+                expect(response.body.updatedComment.votes).toBe(20)
+                expect(typeof response.body.updatedComment.author).toBe("string")
+                expect(typeof response.body.updatedComment.article_id).toBe("number")
+                expect(typeof response.body.updatedComment.created_at).toBe("string")
+            })
+        })
+        test("200: Decrements the vote count by the given amount", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: -6})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedComment.comment_id).toBe(1)
+                expect(typeof response.body.updatedComment.body).toBe("string")
+                expect(response.body.updatedComment.votes).toBe(10)
+                expect(typeof response.body.updatedComment.author).toBe("string")
+                expect(typeof response.body.updatedComment.article_id).toBe("number")
+                expect(typeof response.body.updatedComment.created_at).toBe("string")
+            })
+        })
+        test("200: Ignores any extra keys on object being sent", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: 4, extraKey: 5})
+            .expect(200)
+            .then((response) => {
+                expect(response.body.updatedComment.comment_id).toBe(1)
+                expect(typeof response.body.updatedComment.body).toBe("string")
+                expect(response.body.updatedComment.votes).toBe(20)
+                expect(typeof response.body.updatedComment.author).toBe("string")
+                expect(typeof response.body.updatedComment.article_id).toBe("number")
+                expect(typeof response.body.updatedComment.created_at).toBe("string")
+                expect(response.body.updatedComment).not.toHaveProperty("extraKey")
+            })
+        })
+        test("400: Returns a bad request message if inc_votes key not provided", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("One or more properties must not be null")
+            })
+        })
+        test("400: Returns a bad request message if inc_votes is not a number", () => {
+            return request(app)
+            .patch("/api/comments/1")
+            .send({inc_votes: "a"})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("400: Returns a bad request message if comment_id is invalid", () => {
+            return request(app)
+            .patch("/api/comments/invalid_id")
+            .send({inc_votes: 4})
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("404: Returns a not found message if comment_id is valid but doesn't exist", () => {
+            return request(app)
+            .patch("/api/comments/628")
+            .send({inc_votes: 4})
             .expect(404)
             .then((response) => {
                 expect(response.body.message).toBe("Comment not found")

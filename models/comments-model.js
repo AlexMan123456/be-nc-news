@@ -29,4 +29,14 @@ function removeComment(commentId){
     })
 }
 
-module.exports = { fetchCommentsByArticleId, uploadCommentToArticle, removeComment }
+function incrementCommentVoteCount(newVote, commentId){
+    return db.query("UPDATE comments SET votes=votes+$1 WHERE comment_id=$2 RETURNING *", [newVote, commentId])
+    .then((data) => {
+        if(data.rows.length === 0){
+            return Promise.reject({status: 404, message: "Comment not found"})
+        }
+        return data.rows[0]
+    })
+}
+
+module.exports = { fetchCommentsByArticleId, uploadCommentToArticle, removeComment, incrementCommentVoteCount }

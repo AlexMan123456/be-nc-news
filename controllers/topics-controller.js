@@ -1,8 +1,8 @@
-const { retrieveAllTopics } = require("../models/topics-model")
+const { fetchAllTopics } = require("../models/topics-model")
 
 
 function getAllTopics(request, response, next){
-    retrieveAllTopics().then((topics) => {
+    fetchAllTopics().then((topics) => {
         response.status(200).send({topics})
     }).catch((err) => {
         next(err)

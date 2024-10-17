@@ -1,9 +1,9 @@
 const db = require("../db/connection.js")
 
-function retrieveAllTopics(){
+function fetchAllTopics(){
     return db.query("SELECT * FROM topics").then((data) => {
         return data.rows
     })
 }
 
-module.exports = { retrieveAllTopics }
+module.exports = { fetchAllTopics }

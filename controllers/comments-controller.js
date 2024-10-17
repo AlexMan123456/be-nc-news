@@ -1,5 +1,5 @@
 const { fetchArticleById } = require("../models/articles-model")
-const { fetchCommentsByArticleId, uploadCommentToArticle, removeComment } = require("../models/comments-model")
+const { fetchCommentsByArticleId, uploadCommentToArticle, removeComment, incrementCommentVoteCount } = require("../models/comments-model")
 
 function getCommentsByArticleId(request, response, next){
     Promise.all([fetchCommentsByArticleId(request.params.article_id), fetchArticleById(request.params.article_id)])
@@ -27,4 +27,12 @@ function deleteComment(request, response, next){
     })
 }
 
-module.exports = { getCommentsByArticleId, postCommentToArticle, deleteComment }
+function patchCommentVoteCount(request, response, next){
+    incrementCommentVoteCount(request.body.inc_votes, request.params.comment_id).then((updatedComment) => {
+        response.status(200).send({updatedComment})
+    }).catch((err) => {
+        next(err)
+    })
+}
+
+module.exports = { getCommentsByArticleId, postCommentToArticle, deleteComment, patchCommentVoteCount }
