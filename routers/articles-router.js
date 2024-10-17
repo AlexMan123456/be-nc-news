@@ -1,10 +1,10 @@
 const express = require("express")
-const { getAllArticles, getArticleById, patchArticleVoteCount, postNewArticle } = require("../controllers/articles-controller")
+const { getArticles, getArticleById, patchArticleVoteCount, postNewArticle } = require("../controllers/articles-controller")
 const { getCommentsByArticleId, postCommentToArticle } = require("../controllers/comments-controller")
 const router = express.Router()
 
 router.route("/")
-.get(getAllArticles)
+.get(getArticles)
 .post(postNewArticle)
 
 router.route("/:article_id/comments")
