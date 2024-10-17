@@ -28,8 +28,7 @@ function getArticles(request, response, next){
                 return Promise.reject({status: 404, message: "Not found"})
             }
         }
-        
-        response.status(200).send({articles: result[0]})
+        response.status(200).send({articles: result[0], total_count: result[0].length})
     }).catch((err) => {
         next(err)
     })

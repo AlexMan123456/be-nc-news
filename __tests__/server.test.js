@@ -184,7 +184,7 @@ describe("/api/articles", () => {
             .get("/api/articles")
             .expect(200)
             .then((response) => {
-                expect(response.body.articles.length).toBe(10)
+                expect(response.body.total_count).toBe(10)
                 response.body.articles.forEach((article) => {
                     expect(typeof article.article_id).toBe("number")
                     expect(typeof article.author).toBe("string")
@@ -286,7 +286,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?topic=cats")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(1)
+                    expect(response.body.total_count).toBe(1)
                     response.body.articles.forEach((article) => {
                         expect(typeof article.article_id).toBe("number")
                         expect(typeof article.author).toBe("string")
@@ -304,7 +304,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?topic=paper")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(0)
+                    expect(response.body.total_count).toBe(0)
                 })
             })
             test("200: Responds with the correct number of articles sorted in the correct order when given a limit", () => {
@@ -312,7 +312,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?limit=5")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(5)
+                    expect(response.body.total_count).toBe(5)
                     response.body.articles.forEach((article) => {
                         expect(typeof article.article_id).toBe("number")
                         expect(typeof article.author).toBe("string")
@@ -330,7 +330,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?&p=2")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(3)
+                    expect(response.body.total_count).toBe(3)
                     return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
                 }).then(([articles, data]) => {
                     data.rows.slice(10,13).forEach((article, index) => {
@@ -343,7 +343,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?limit=5&p=2")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(5)
+                    expect(response.body.total_count).toBe(5)
                     return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
                 }).then(([articles, data]) => {
                     data.rows.slice(5,10).forEach((article, index) => {
@@ -356,7 +356,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?p=3")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(0)
+                    expect(response.body.total_count).toBe(0)
                 })
             })
             test("400: Returns a bad request message when given an invalid sort_by query", () => {
