@@ -184,7 +184,7 @@ describe("/api/articles", () => {
             .get("/api/articles")
             .expect(200)
             .then((response) => {
-                expect(response.body.articles.length).toBe(10)
+                expect(response.body.articles.length).toBe(13)
                 response.body.articles.forEach((article) => {
                     expect(typeof article.article_id).toBe("number")
                     expect(typeof article.author).toBe("string")
@@ -283,10 +283,10 @@ describe("/api/articles", () => {
             })
             test("200: Filters articles by given topic when given a valid topic query", () => {
                 return request(app)
-                .get("/api/articles?topic=cats")
+                .get("/api/articles?topic=mitch")
                 .expect(200)
                 .then((response) => {
-                    expect(response.body.articles.length).toBe(1)
+                    expect(response.body.articles.length).toBe(12)
                     response.body.articles.forEach((article) => {
                         expect(typeof article.article_id).toBe("number")
                         expect(typeof article.author).toBe("string")
@@ -295,65 +295,13 @@ describe("/api/articles", () => {
                         expect(typeof article.votes).toBe("number")
                         expect(typeof article.article_img_url).toBe("string")
                         expect(typeof article.comment_count).toBe("number")
-                        expect(article.topic).toBe("cats")
+                        expect(article.topic).toBe("mitch")
                     })
                 })
             })
             test("200: Responds with an empty array when given a topic that exists but has no articles", () => {
                 return request(app)
                 .get("/api/articles?topic=paper")
-                .expect(200)
-                .then((response) => {
-                    expect(response.body.articles.length).toBe(0)
-                })
-            })
-            test("200: Responds with the correct number of articles sorted in the correct order when given a limit", () => {
-                return request(app)
-                .get("/api/articles?limit=5")
-                .expect(200)
-                .then((response) => {
-                    expect(response.body.articles.length).toBe(5)
-                    response.body.articles.forEach((article) => {
-                        expect(typeof article.article_id).toBe("number")
-                        expect(typeof article.author).toBe("string")
-                        expect(typeof article.title).toBe("string")
-                        expect(typeof article.created_at).toBe("string")
-                        expect(typeof article.votes).toBe("number")
-                        expect(typeof article.article_img_url).toBe("string")
-                        expect(typeof article.comment_count).toBe("number")
-                        expect(typeof article.topic).toBe("string")
-                    })
-                })
-            })
-            test("200: Responds with the correct number of articles starting from the correct position when given a page number using default limit", () => {
-                return request(app)
-                .get("/api/articles?&p=2")
-                .expect(200)
-                .then((response) => {
-                    expect(response.body.articles.length).toBe(3)
-                    return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
-                }).then(([articles, data]) => {
-                    data.rows.slice(10,13).forEach((article, index) => {
-                        expect(article.article_id).toBe(articles[index].article_id)
-                    })
-                })
-            })
-            test("200: Responds with the correct number of articles starting from the correct position when given a page number and limit", () => {
-                return request(app)
-                .get("/api/articles?limit=5&p=2")
-                .expect(200)
-                .then((response) => {
-                    expect(response.body.articles.length).toBe(5)
-                    return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
-                }).then(([articles, data]) => {
-                    data.rows.slice(5,10).forEach((article, index) => {
-                        expect(article.article_id).toBe(articles[index].article_id)
-                    })
-                })
-            })
-            test("200: Responds with an empty array when page number exceeds the maximum possible number of pages", () => {
-                return request(app)
-                .get("/api/articles?p=3")
                 .expect(200)
                 .then((response) => {
                     expect(response.body.articles.length).toBe(0)
@@ -381,22 +329,6 @@ describe("/api/articles", () => {
                 .expect(404)
                 .then((response) => {
                     expect(response.body.message).toBe("Not found")
-                })
-            })
-            test("400: Responds with bad request when given an invalid limit", () => {
-                return request(app)
-                .get("/api/articles?limit=invalid_limit")
-                .expect(400)
-                .then((response) => {
-                    expect(response.body.message).toBe("Bad request")
-                })
-            })
-            test("400: Responds with bad request when given an invalid page number", () => {
-                return request(app)
-                .get("/api/articles?p=invalid_page_number")
-                .expect(400)
-                .then((response) => {
-                    expect(response.body.message).toBe("Bad request")
                 })
             })
         })
@@ -794,7 +726,7 @@ describe("/api/comments/:comment_id", () => {
                 expect(response.body.message).toBe("Bad request")
             })
         })
-        test("400: Returns a bad request message if comment_id is invalid", () => {
+        test("400: Returns a bad request message if article_id is invalid", () => {
             return request(app)
             .patch("/api/comments/invalid_id")
             .send({inc_votes: 4})
@@ -803,7 +735,7 @@ describe("/api/comments/:comment_id", () => {
                 expect(response.body.message).toBe("Bad request")
             })
         })
-        test("404: Returns a not found message if comment_id is valid but doesn't exist", () => {
+        test("404: Returns a not found message if article_id is invalid", () => {
             return request(app)
             .patch("/api/comments/628")
             .send({inc_votes: 4})

@@ -11,12 +11,7 @@
   },
   "GET /api/articles": {
     "description": "serves an array of all articles",
-    "queries": {
-      "topic": "Get articles corresponding to a given topic",
-      "sort_by": "Sort by a given category (defaults to created_at)",
-      "order": "Decide whether to sort in ascending or descending order (defaults to descending order)",
-      "limit": "Limits the number of articles given",
-      "p": "Start at the given page number"},
+    "queries": ["author", "topic", "sort_by", "order"],
     "exampleResponse": {
       "articles": [
         {

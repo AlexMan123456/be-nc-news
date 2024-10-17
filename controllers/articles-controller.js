@@ -1,5 +1,4 @@
-const { fetchArticleById, fetchArticles, incrementArticleVoteCount, uploadNewArticle } = require("../models/articles-model")
-const { fetchAllTopics } = require("../models/topics-model")
+const { fetchArticleById, fetchAllArticles, incrementArticleVoteCount, uploadNewArticle } = require("../models/articles-model")
 
 function getArticleById(request, response, next){
     fetchArticleById(request.params.article_id).then((article) => {
@@ -9,27 +8,9 @@ function getArticleById(request, response, next){
     })
 }
 
-function getArticles(request, response, next){
-    const topicName = request.query.topic
-    const promises = [fetchArticles(request.query.sort_by, request.query.order, topicName, request.query.limit, request.query.p)]
-    if(topicName){
-        promises.push(fetchAllTopics())
-    }
-    Promise.all(promises).then((result) => {
-        if(topicName){
-            let validTopic = false
-            for(const topic of result[1]){
-                if(topic.slug === topicName){
-                    validTopic = true
-                    break
-                }
-            }
-            if(validTopic === false){
-                return Promise.reject({status: 404, message: "Not found"})
-            }
-        }
-        
-        response.status(200).send({articles: result[0]})
+function getAllArticles(request, response, next){
+    fetchAllArticles(request.query.sort_by, request.query.order, request.query.topic).then((articles) => {
+        response.status(200).send({articles})
     }).catch((err) => {
         next(err)
     })
@@ -51,4 +32,4 @@ function postNewArticle(request, response, next){
     })
 }
 
-module.exports = { getArticleById, getArticles, patchArticleVoteCount, postNewArticle }
+module.exports = { getArticleById, getAllArticles, patchArticleVoteCount, postNewArticle }
