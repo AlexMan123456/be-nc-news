@@ -2,7 +2,7 @@ const { fetchArticleById } = require("../models/articles-model")
 const { fetchCommentsByArticleId, uploadCommentToArticle, removeComment, incrementCommentVoteCount } = require("../models/comments-model")
 
 function getCommentsByArticleId(request, response, next){
-    Promise.all([fetchCommentsByArticleId(request.params.article_id), fetchArticleById(request.params.article_id)])
+    Promise.all([fetchCommentsByArticleId(request.params.article_id, request.query.limit, request.query.p), fetchArticleById(request.params.article_id)])
     .then(([comments, article]) => {
         response.status(200).send({comments})
     }).catch((err) => {

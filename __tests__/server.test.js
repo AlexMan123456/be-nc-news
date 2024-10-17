@@ -313,6 +313,7 @@ describe("/api/articles", () => {
                 .expect(200)
                 .then((response) => {
                     expect(response.body.total_count).toBe(5)
+                    expect(response.body.articles).toBeSortedBy("created_at", {descending: true})
                     response.body.articles.forEach((article) => {
                         expect(typeof article.article_id).toBe("number")
                         expect(typeof article.author).toBe("string")
@@ -331,6 +332,7 @@ describe("/api/articles", () => {
                 .expect(200)
                 .then((response) => {
                     expect(response.body.total_count).toBe(3)
+                    expect(response.body.articles).toBeSortedBy("created_at", {descending: true})
                     return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
                 }).then(([articles, data]) => {
                     data.rows.slice(10,13).forEach((article, index) => {
@@ -344,6 +346,7 @@ describe("/api/articles", () => {
                 .expect(200)
                 .then((response) => {
                     expect(response.body.total_count).toBe(5)
+                    expect(response.body.articles).toBeSortedBy("created_at", {descending: true})
                     return Promise.all([response.body.articles, db.query("SELECT * FROM articles ORDER BY created_at DESC")])
                 }).then(([articles, data]) => {
                     data.rows.slice(5,10).forEach((article, index) => {
@@ -551,12 +554,13 @@ describe("/api/articles", () => {
 
 describe("/api/articles/:article_id/comments", () => {
     describe("GET", () => {
-        test("200: Responds with an array of all comments associated with a given ID", () => {
+        test("200: Responds with an array of up to 10 comments, sorted by most recent comment, associated with a given ID when no limit query given", () => {
             return request(app)
             .get("/api/articles/1/comments")
             .expect(200)
             .then((response) => {
-                expect(response.body.comments.length).toBe(11)
+                expect(response.body.comments.length).toBe(10)
+                expect(response.body.comments).toBeSortedBy("created_at", {descending: true})
                 response.body.comments.forEach((comment) => {
                     expect(typeof comment.comment_id).toBe("number")
                     expect(typeof comment.votes).toBe("number")
@@ -589,6 +593,63 @@ describe("/api/articles/:article_id/comments", () => {
             .expect(404)
             .then((response) => {
                 expect(response.body.message).toBe("Article not found")
+            })
+        })
+    })
+    describe("Pagination queries", () => {
+        test("200: Responds with the correct number of comments, sorted by most recent comment, when given a valid limit", () => {
+            return request(app)
+            .get("/api/articles/1/comments?limit=5")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.comments.length).toBe(5)
+                expect(response.body.comments).toBeSortedBy("created_at", {descending: true})
+                response.body.comments.forEach((comment) => {
+                    expect(typeof comment.comment_id).toBe("number")
+                    expect(typeof comment.votes).toBe("number")
+                    expect(typeof comment.created_at).toBe("string")
+                    expect(typeof comment.author).toBe("string")
+                    expect(typeof comment.body).toBe("string")
+                    expect(comment.article_id).toBe(1)
+                })
+            })
+        })
+        test("200: Responds with the correct number of comments starting from the correct position and sorted by most recent comment when given a page number", () => {
+            return request(app)
+            .get("/api/articles/1/comments?limit=5&p=2")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.comments.length).toBe(5)
+                expect(response.body.comments).toBeSortedBy("created_at", {descending: true})
+                return Promise.all([response.body.comments, db.query(`SELECT * FROM comments WHERE article_id = 1 ORDER BY created_at DESC`)])
+            }).then(([comments, data]) => {
+                data.rows.slice(5,10).forEach((comment, index) => {
+                    expect(comments[index].comment_id).toEqual(comment.comment_id)
+                })
+            })
+        })
+        test("200: Responds with an empty array when given a page number with no comments", () => {
+            return request(app)
+            .get("/api/articles/1/comments?p=3")
+            .expect(200)
+            .then((response) => {
+                expect(response.body.comments.length).toBe(0)
+            })
+        })
+        test("400: Responds with a bad request message when given an invalid limit query", () => {
+            return request(app)
+            .get("/api/articles/1/comments?limit=invalid_limit")
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("400: Responds with a bad request message when given an invalid page query", () => {
+            return request(app)
+            .get("/api/articles/1/comments?p=invalid_page")
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
             })
         })
     })
