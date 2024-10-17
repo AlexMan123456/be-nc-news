@@ -124,7 +124,7 @@
   },
   "GET /api/users/:username": {
     "description": "serves an object representation of a user given their username",
-    "exampleRequest": "/api/users/1",
+    "exampleRequest": "/api/users/butter_bridge",
     "exampleResponse": {
       "users": {
         "username": "butter_bridge",
