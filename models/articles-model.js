@@ -1,4 +1,5 @@
 const db = require("../db/connection.js")
+const { removeComment } = require("./comments-model.js")
 
 function fetchArticleById(articleId){
     return db.query(
@@ -89,12 +90,19 @@ function uploadNewArticle(newArticle){
         queryString = queryString + "(author, title, body, topic) VALUES ($1, $2, $3, $4) RETURNING *"
     }
 
-    return db.query(queryString,
-    Object.values(newArticle))
+    return db.query(queryString, Object.values(newArticle))
     .then((data) => {
         data.rows[0].comment_count = 0
         return data.rows[0]
     })
 }
 
-module.exports = { fetchArticleById, fetchArticles, incrementArticleVoteCount, uploadNewArticle }
+function removeArticle(articleId){
+    return db.query("DELETE FROM articles WHERE article_id = $1 RETURNING *", [articleId]).then((data) => {
+        if(data.rows.length === 0){
+            return Promise.reject({status: 404, message: "Article not found"})
+        }
+    })
+}
+
+module.exports = { fetchArticleById, fetchArticles, incrementArticleVoteCount, uploadNewArticle, removeArticle }

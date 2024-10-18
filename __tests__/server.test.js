@@ -218,6 +218,42 @@ describe("/api/articles/:article_id", () => {
             })
         })
     })
+    describe("DELETE", () => {
+        test("204: Deletes the article with the associated ID", () => {
+            return request(app)
+            .delete("/api/articles/1")
+            .expect(204)
+        })
+        test("204: Deletes the article with the associated ID along with any associated comments", () => {
+            return request(app)
+            .delete("/api/articles/1")
+            .expect(204)
+            .then(() => {
+                return db.query("SELECT * FROM comments")
+            }).then((data) => {
+                expect(data.rows.length).toBe(7)
+                data.rows.forEach((comment) => {
+                    expect(comment.article_id).not.toBe(1)
+                })
+            })
+        })
+        test("400: Responds with a bad request message if ID is invalid", () => {
+            return request(app)
+            .delete("/api/articles/invalid_comment_id")
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Bad request")
+            })
+        })
+        test("404: Responds with a not found message if ID is valid but the article associated with it does not exist", () => {
+            return request(app)
+            .delete("/api/articles/360")
+            .expect(404)
+            .then((response) => {
+                expect(response.body.message).toBe("Article not found")
+            })
+        })
+    })
 })
 
 describe("/api/articles", () => {
@@ -931,7 +967,7 @@ describe("/api/users/:username", () => {
                 expect(typeof response.body.user.avatar_url).toBe("string")
             })
         })
-        test("404: Responds with a not found message when given a user that does nott exist in database", () => {
+        test("404: Responds with a not found message when given a user that does not exist in database", () => {
             return request(app)
             .get("/api/users/nonexistent_user")
             .expect(404)
