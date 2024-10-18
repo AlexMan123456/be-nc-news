@@ -1,4 +1,4 @@
-const { fetchArticleById, fetchArticles, incrementArticleVoteCount, uploadNewArticle } = require("../models/articles-model")
+const { fetchArticleById, fetchArticles, incrementArticleVoteCount, uploadNewArticle, removeArticle } = require("../models/articles-model")
 const { fetchAllTopics } = require("../models/topics-model")
 
 function getArticleById(request, response, next){
@@ -50,4 +50,12 @@ function postNewArticle(request, response, next){
     })
 }
 
-module.exports = { getArticleById, getArticles, patchArticleVoteCount, postNewArticle }
+function deleteArticle(request, response, next){
+    removeArticle(request.params.article_id).then(() => {
+        response.status(204).send({})
+    }).catch((err) => {
+        next(err)
+    })
+}
+
+module.exports = { getArticleById, getArticles, patchArticleVoteCount, postNewArticle, deleteArticle }

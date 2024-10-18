@@ -199,6 +199,11 @@
     "description": "deletes a comment given its ID",
     "exampleRequest": "/api/comments/1",
     "exampleResponse": "Does not respond with anything - comment just gets deleted"
+  },
+  "DELETE /api/articles/:article_id": {
+    "description": "deletes an article given its ID",
+    "exampleRequest": "/api/articles/1",
+    "exampleResponse": "Does not respond with anything - article just gets deleted"
   }
 }
 
