@@ -1,5 +1,4 @@
 const db = require("../db/connection.js")
-const { removeComment } = require("./comments-model.js")
 
 function fetchArticleById(articleId){
     return db.query(
