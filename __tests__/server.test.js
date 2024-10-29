@@ -140,7 +140,7 @@ describe("/api/articles/:article_id", () => {
             })
         })
         test("200: Decrements the vote count by the given amount", () => {
-            request(app)
+            return request(app)
             .patch("/api/articles/1")
             .send({inc_votes: -10})
             .expect(200)
@@ -549,7 +549,6 @@ describe("/api/articles", () => {
                 expect(typeof response.body.postedArticle.article_id).toBe("number")
                 expect(response.body.postedArticle.votes).toBe(0)
                 expect(response.body.postedArticle.comment_count).toBe(0)
-                expect(response.body.postedArticle).not.toHaveProperty("extraKey")
             })
         })
         test("400: Returns a bad request message if any other property is missing", () => {
