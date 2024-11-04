@@ -1,5 +1,6 @@
 //Imports
 const express = require("express")
+const cors = require("cors")
 const { invalidEndpoint, internalServerError, sqlErrors, customErrors } = require("./controllers/error-handling.js")
 const articles = require("./routers/articles-router.js")
 const topics = require("./routers/topics-router.js")
@@ -8,6 +9,8 @@ const endpoints = require("./routers/endpoints-router.js")
 const comments = require("./routers/comments-router.js")
 const app = express()
 
+//Allow Cross Origin Resource Sharing
+app.use(cors())
 //Needed to parse request body
 app.use(express.json())
 
