@@ -14,6 +14,9 @@ function fetchCommentsByArticleId(articleId, limit=10, pageNumber=1){
 }
 
 function uploadCommentToArticle(comment, articleId){
+    if(comment.body === ""){
+        return Promise.reject({status: 400, message: "Comment body must not be empty"})
+    }
     return db.query(
         `INSERT INTO comments(body, article_id, author) VALUES
         ($1, $2, $3)
