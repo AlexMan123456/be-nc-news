@@ -826,6 +826,18 @@ describe("/api/articles/:article_id/comments", () => {
                 expect(response.body.message).toBe("Not found")
             })
         })
+        test("404: Sends a not found message if comment body is empty", () => {
+            return request(app)
+            .post("/api/articles/1/comments")
+            .send({
+                username: "butter_bridge",
+                body: ""
+            })
+            .expect(400)
+            .then((response) => {
+                expect(response.body.message).toBe("Comment body must not be empty")
+            })
+        })
     })
 })
 
