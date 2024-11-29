@@ -32,10 +32,6 @@ jobs:
       uses: harmon758/postgresql-action@v1
       with: 
         postgresql db: ${{ secrets.PGDATABASE }}
-    - name: Initialise environment variables
-      run: |
-        touch .env.test
-        echo ${{ secrets.PGDATABASE }} >> .env.test
     - name: Run tests
       run: |
         npm test utils
