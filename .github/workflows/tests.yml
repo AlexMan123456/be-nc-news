@@ -33,7 +33,7 @@ jobs:
       with: 
         postgresql db: ${{ secrets.PGDATABASE }}
         postgresql user: username
-        postgresql password: p4ssw0rd
+        postgresql password: password
     - name: Initialise environment variables
       run: |
         touch .env.test
@@ -41,4 +41,4 @@ jobs:
     - name: Run tests
       run: |
         npm test utils
-        npm test server
+        PGUSER="username" PGPASSWORD="password" npm test server
