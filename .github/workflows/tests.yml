@@ -34,6 +34,10 @@ jobs:
         postgresql db: ${{ secrets.PGDATABASE }}
         postgresql user: username
         postgresql password: password
+    - name: Initialise environment variables
+      run: |
+        touch .env.test
+        echo "PGDATABASE="${{ secrets.PGDATABASE }}" >> .env.test
     - name: Run tests
       run: |
         npm test utils
