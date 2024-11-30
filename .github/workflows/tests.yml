@@ -37,7 +37,7 @@ jobs:
     - name: Initialise environment variables
       run: |
         touch .env.test
-        echo "PGDATABASE="${{ secrets.PGDATABASE }}" >> .env.test
+        echo 'PGDATABASE="${{ secrets.PGDATABASE }}"' >> .env.test
     - name: Run tests
       run: |
         npm test utils
