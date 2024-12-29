@@ -407,7 +407,7 @@ describe("/api/articles", () => {
             })
             test("200: Responds with the correct number of articles starting from the correct position when given a page number using default limit", () => {
                 return request(app)
-                .get("/api/articles?&p=2")
+                .get("/api/articles?p=2")
                 .expect(200)
                 .then((response) => {
                     expect(response.body.total_count).toBe(3)

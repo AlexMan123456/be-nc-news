@@ -97,10 +97,13 @@ function uploadNewArticle(newArticle){
 }
 
 function removeArticle(articleId){
-    return db.query("DELETE FROM articles WHERE article_id = $1 RETURNING *", [articleId]).then((data) => {
+    return db.query("SELECT * FROM articles WHERE article_id = $1", [articleId]).then((data) => {
         if(data.rows.length === 0){
             return Promise.reject({status: 404, message: "Article not found"})
         }
+        return db.query("DELETE FROM comments WHERE article_id = $1", [articleId])
+    }).then(() => {
+        return db.query("DELETE FROM articles WHERE article_id = $1 RETURNING *", [articleId])
     })
 }
 
