@@ -15,16 +15,21 @@ function fetchArticleById(articleId){
     })
 }
 
-function fetchArticles(sortBy="created_at", order="DESC", topic, limit=10, pageNumber=1){
+function fetchArticles(sortBy="created_at", order="DESC", topic, author, limit=10, pageNumber=1){
     let queryString = `
     SELECT articles.*, COUNT(comments)::INT AS comment_count
     FROM articles LEFT JOIN comments 
     ON comments.article_id = articles.article_id `
     
     const queryValues = []
-    if(topic !== undefined){
+    if(topic){
         queryValues.push(topic)
         queryString = queryString + `WHERE topic=$${queryValues.length} `
+    }
+
+    if(author){
+        queryValues.push(author)
+        queryString = queryString + `${topic ? "AND" : "WHERE"} articles.author=$${queryValues.length} `
     }
 
     queryString = queryString + "GROUP BY articles.article_id "

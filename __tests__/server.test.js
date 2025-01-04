@@ -441,6 +441,31 @@ describe("/api/articles", () => {
                     expect(response.body.total_count).toBe(0)
                 })
             })
+            test("200: Responds with an array of all articles created by a given user when given an author query", () => {
+                return request(app)
+                .get("/api/articles?author=butter_bridge")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.articles.length).toBe(4)
+                    response.body.articles.forEach((article) => {
+                        expect(article.author).toBe("butter_bridge")
+                        expect(typeof article.article_id).toBe("number")
+                        expect(typeof article.votes).toBe("number")
+                        expect(typeof article.title).toBe("string")
+                        expect(typeof article.topic).toBe("string")
+                        expect(typeof article.created_at).toBe("string")
+                        expect(typeof article.article_img_url).toBe("string")
+                    })
+                })
+            })
+            test("200: Responds with an empty array when given an author query where the author has no articles", () => {
+                return request(app)
+                .get("/api/articles?author=lurker")
+                .expect(200)
+                .then((response) => {
+                    expect(response.body.articles.length).toBe(0)
+                })
+            })
             test("400: Returns a bad request message when given an invalid sort_by query", () => {
                 return request(app)
                 .get("/api/articles?sort_by=invalid_sort_by")
@@ -462,7 +487,7 @@ describe("/api/articles", () => {
                 .get("/api/articles?topic=nonexistent_topic")
                 .expect(404)
                 .then((response) => {
-                    expect(response.body.message).toBe("Not found")
+                    expect(response.body.message).toBe("Topic not found")
                 })
             })
             test("400: Responds with bad request when given an invalid limit", () => {
@@ -479,6 +504,14 @@ describe("/api/articles", () => {
                 .expect(400)
                 .then((response) => {
                     expect(response.body.message).toBe("Bad request")
+                })
+            })
+            test("404: Responds with a not found message when given a user that does not exist", () => {
+                return request(app)
+                .get("/api/articles?author=nonexistent_user")
+                .expect(404)
+                .then((response) => {
+                    expect(response.body.message).toBe("User not found")
                 })
             })
         })

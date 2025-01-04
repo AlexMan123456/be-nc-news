@@ -1,5 +1,7 @@
 const { fetchArticleById, fetchArticles, incrementArticleVoteCount, uploadNewArticle, removeArticle } = require("../models/articles-model")
 const { fetchAllTopics } = require("../models/topics-model")
+const { fetchAllUsers, fetchUserByUsername } = require("../models/users-model")
+const isPropertyPresent = require("../utils/is-item-present")
 
 function getArticleById(request, response, next){
     fetchArticleById(request.params.article_id).then((article) => {
@@ -10,24 +12,22 @@ function getArticleById(request, response, next){
 }
 
 function getArticles(request, response, next){
-    const topicName = request.query.topic
-    const promises = [fetchArticles(request.query.sort_by, request.query.order, topicName, request.query.limit, request.query.p)]
-    if(topicName){
+    const {sort_by, order, topic, author, limit, p} = request.query
+    const promises = [fetchArticles(sort_by, order, topic, author, limit, p)]
+    if(topic){
         promises.push(fetchAllTopics())
     }
+    if(author){
+        promises.push(fetchUserByUsername(author))
+    }
     Promise.all(promises).then((result) => {
-        if(topicName){
-            let validTopic = false
-            for(const topic of result[1]){
-                if(topic.slug === topicName){
-                    validTopic = true
-                    break
-                }
-            }
+        if(topic){
+            const validTopic = isPropertyPresent(result[1], "slug", topic)
             if(validTopic === false){
-                return Promise.reject({status: 404, message: "Not found"})
+                return Promise.reject({status: 404, message: "Topic not found"})
             }
         }
+
         response.status(200).send({articles: result[0], total_count: result[0].length})
     }).catch((err) => {
         next(err)
